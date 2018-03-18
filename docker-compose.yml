@@ -1,0 +1,41 @@
+version: '2'
+services:
+  web:
+    build: .
+    container_name: silexfastexample
+    volumes:
+      - ./web:/var/www/html/web
+      - ./src:/var/www/html/src
+      - ./app:/var/www/html/app
+      - ./var:/var/www/html/var
+      - ./vendor:/var/www/html/vendor
+      - ./composer.lock:/var/www/html/composer.lock
+      - ./composer.json:/var/www/html/composer.json
+#      - ./docker-config/nginx.conf.bak-alpine72-jessie:/etc/nginx/nginx.conf.bak-alpine72-jessie
+    ports:
+      - 8080:80
+#    depends_on:
+#      - oauthredis
+    depends_on:
+      - mongo_database
+    env_file:
+      - ./env/.dev
+#      - .env-local
+#  oauthredis:
+#    image: redis
+#    ports:
+#      - 6379:6379
+#    command: redis-server --requirepass c965c6de-2d5a-44c0-b51b-aae50e43b479
+
+  mongo_database:
+    image: mongo:latest
+    container_name: silexfastexample-mongo-database
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongodata:/data/db
+
+  mongo-seed:
+    build: ./mongo-seed
+    links:
+      - mongo_database

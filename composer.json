@@ -1,0 +1,33 @@
+{
+    "name": "blairg/silex-fast-secure-example",
+    "description": "Example of an optimised ",
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": ">=5.5.9",
+        "silex/silex": "~2.0",
+        "silex/web-profiler": "~2.0",
+        "symfony/class-loader": "~2.8|^3.0",
+        "symfony/config": "~2.8|^3.0",
+        "symfony/console": "~2.8|^3.0",
+        "symfony/debug": "^4.0",
+        "symfony/monolog-bridge": "~2.8|^3.0",
+        "symfony/security": "~2.8|^3.0",
+        "symfony/validator": "~2.8|^3.0",
+        "mongodb/mongodb": "^1.3"
+    },
+    "autoload": {
+        "psr-4": { "SilexExample\\": "src/" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
+        }
+    },
+    "scripts": {
+        "run": [
+            "echo 'Started web server on http://localhost:8888'",
+            "php -S localhost:8888 -t web"
+        ]
+    }
+}

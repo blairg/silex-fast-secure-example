@@ -1,0 +1,143 @@
+worker_processes  4;
+#pid /run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    server_tokens off;
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main_timed  '$remote_addr - $remote_user [$time_local] "$request" '
+                            '$status $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for" '
+                            '$request_time $upstream_response_time $pipe $upstream_cache_status';
+
+    #access_log /dev/stdout main_timed;
+    #error_log /dev/stderr crit;
+
+    access_log off;
+    error_log   /dev/null   crit;
+
+    keepalive_timeout  5;
+
+
+
+      # send headers in one peace, its better then sending them one by one
+      #tcp_nopush on;
+
+      # don't buffer data sent, good for small data bursts in real time
+      #tcp_nodelay on;
+
+    server {
+        listen [::]:80 default_server;
+        listen 80 default_server;
+        server_name _;
+
+        sendfile off;
+        access_log off;
+
+        root /var/www/html/web;
+
+        location / {
+            access_log off;
+            sendfile off;
+            return 404;
+        }
+
+        # only allowing POST requests for the 3 endpoints in use
+        #
+        location ~* /(login|token|opentoken|hello)$ {
+            access_log off;
+            #add_header Allow "POST" always;
+            #if ( $request_method !~ ^(POST)$ ) {
+                #return 405;
+            #}
+            #access_log  /dev/null;
+            try_files $uri $uri/ /index.php?q=$uri&$args;
+        }
+
+        # redirect bad request to the static page /404.html
+        #
+        error_page 400 /400.html;
+        location  /400.html {
+            access_log off;
+            root /var/lib/nginx/html;
+            internal;
+        }
+
+        # redirect access denied to the static page /403.html
+        #
+        error_page 403 /403.html;
+        location  /403.html {
+            access_log off;
+            root /var/lib/nginx/html;
+            internal;
+        }
+
+        # redirect page not found to the static page /404.html
+        #
+        error_page 404 /404.html;
+        location  /404.html {
+            access_log off;
+            root /var/lib/nginx/html;
+            internal;
+        }
+
+        # redirect method not allowed to the static page /405.html
+        #
+        error_page 405 /405.html;
+        location  /405.html {
+            access_log off;
+            root /var/lib/nginx/html;
+            internal;
+        }
+
+        # redirect too many reaquest to the static page /429.html
+        #
+        error_page 429 /429.html;
+        location  /429.html {
+            access_log off;
+            root /var/lib/nginx/html;
+            internal;
+        }
+
+        # redirect server error to the static page /500.html
+        #
+        error_page 500 502 503 504 /500.html;
+        location  /500.html {
+            access_log off;
+            root /var/lib/nginx/html;
+            internal;
+        }
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        location ~ \.php$ {
+            access_log off;
+            internal;
+            try_files $uri =404;
+            fastcgi_split_path_info ^(.+\.php)(/.+)$;
+            fastcgi_pass  localhost:9000;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+            fastcgi_index index.php;
+            include fastcgi_params;
+        }
+
+        #location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
+            #expires 5d;
+        #}
+
+        # deny access to . files, for security
+        #
+        location ~ /\. {
+            access_log off;
+            log_not_found off;
+            deny all;
+        }
+    }
+    include conf.d/*.conf;
+}
